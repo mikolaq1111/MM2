@@ -180,19 +180,20 @@ UIStroke.Thickness = 2
 UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 UIStroke.Parent = MainFrame
 
--- GUI Auto-Scaling for Mobile & Tablets
+-- GUI Auto-Scaling for Mobile & Tablets (uses FitWithinMaxSize to prevent height/width overflow)
 local UIAspectRatio = Instance.new("UIAspectRatioConstraint")
 UIAspectRatio.AspectRatio = 600 / 420
-UIAspectRatio.AspectType = Enum.AspectType.ScaleWithParentSize
-UIAspectRatio.DominantAxis = Enum.DominantAxis.Width
+UIAspectRatio.AspectType = Enum.AspectType.FitWithinMaxSize
 UIAspectRatio.Parent = MainFrame
 
--- Adjust size dynamically depending on device type
-if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
-    -- Mobile sizing
-    MainFrame.Size = UDim2.new(0.85, 0, 0.85, 0)
-    MainFrame.Position = UDim2.new(0.075, 0, 0.075, 0)
-end
+-- Set base size to take up 85% of screen (responsive scale-based)
+MainFrame.Size = UDim2.new(0.85, 0, 0.85, 0)
+MainFrame.Position = UDim2.new(0.075, 0, 0.075, 0)
+
+-- Size constraint to keep PC layout from scaling too large
+local UISizeConstraint = Instance.new("UISizeConstraint")
+UISizeConstraint.MaxSize = Vector2.new(600, 420)
+UISizeConstraint.Parent = MainFrame
 
 -- Header Bar
 local Header = Instance.new("Frame")
@@ -268,13 +269,15 @@ SidebarPatch.BackgroundColor3 = Theme.Sidebar
 SidebarPatch.BorderSizePixel = 0
 SidebarPatch.Parent = Sidebar
 
--- Tab Navigation Container (transparent to isolate UIListLayout)
-local NavContainer = Instance.new("Frame")
+-- Tab Navigation Container (ScrollingFrame to support mobile/tablet screen heights)
+local NavContainer = Instance.new("ScrollingFrame")
 NavContainer.Name = "NavContainer"
 NavContainer.Size = UDim2.new(1, -10, 1, -10)
 NavContainer.Position = UDim2.new(0, 5, 0, 5)
 NavContainer.BackgroundTransparency = 1
 NavContainer.BorderSizePixel = 0
+NavContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+NavContainer.ScrollBarThickness = 0 -- keep it clean and hidden, but scrollable
 NavContainer.Parent = Sidebar
 
 -- Tab Navigation Layout
@@ -282,6 +285,11 @@ local NavLayout = Instance.new("UIListLayout")
 NavLayout.Parent = NavContainer
 NavLayout.SortOrder = Enum.SortOrder.LayoutOrder
 NavLayout.Padding = UDim.new(0, 4)
+
+-- Auto-adjust NavContainer CanvasSize based on tabs
+NavLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    NavContainer.CanvasSize = UDim2.new(0, 0, 0, NavLayout.AbsoluteContentSize.Y + 10)
+end)
 
 -- Page Container
 local PageContainer = Instance.new("Frame")
