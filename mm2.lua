@@ -268,9 +268,18 @@ SidebarPatch.BackgroundColor3 = Theme.Sidebar
 SidebarPatch.BorderSizePixel = 0
 SidebarPatch.Parent = Sidebar
 
+-- Tab Navigation Container (transparent to isolate UIListLayout)
+local NavContainer = Instance.new("Frame")
+NavContainer.Name = "NavContainer"
+NavContainer.Size = UDim2.new(1, -10, 1, -10)
+NavContainer.Position = UDim2.new(0, 5, 0, 5)
+NavContainer.BackgroundTransparency = 1
+NavContainer.BorderSizePixel = 0
+NavContainer.Parent = Sidebar
+
 -- Tab Navigation Layout
 local NavLayout = Instance.new("UIListLayout")
-NavLayout.Parent = Sidebar
+NavLayout.Parent = NavContainer
 NavLayout.SortOrder = Enum.SortOrder.LayoutOrder
 NavLayout.Padding = UDim.new(0, 4)
 
@@ -343,7 +352,7 @@ local ActiveTab = nil
 
 local function CreateTab(name, order)
     local TabButton = Instance.new("TextButton")
-    TabButton.Size = UDim2.new(1, -10, 0, 35)
+    TabButton.Size = UDim2.new(1, 0, 0, 35)
     TabButton.BackgroundTransparency = 1
     TabButton.Text = "  " .. name
     TabButton.TextColor3 = Theme.TextDark
@@ -351,7 +360,7 @@ local function CreateTab(name, order)
     TabButton.Font = Enum.Font.GothamMedium
     TabButton.TextXAlignment = Enum.TextXAlignment.Left
     TabButton.LayoutOrder = order
-    TabButton.Parent = Sidebar
+    TabButton.Parent = NavContainer
     
     -- Add small round indicator inside button
     local RoundCorner = Instance.new("UICorner")
@@ -380,7 +389,7 @@ local function CreateTab(name, order)
     end)
     
     TabButton.MouseButton1Click:Connect(function()
-        for _, otherBtn in ipairs(Sidebar:GetChildren()) do
+        for _, otherBtn in ipairs(NavContainer:GetChildren()) do
             if otherBtn:IsA("TextButton") then
                 otherBtn.TextColor3 = Theme.TextDark
                 otherBtn.BackgroundTransparency = 1
